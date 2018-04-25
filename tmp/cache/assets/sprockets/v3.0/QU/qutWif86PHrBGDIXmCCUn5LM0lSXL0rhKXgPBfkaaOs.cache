@@ -1,0 +1,45 @@
+I"P(function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  Teaspoon.Mocha.Fixture = (function(superClass) {
+    extend(Fixture, superClass);
+
+    function Fixture() {
+      return Fixture.__super__.constructor.apply(this, arguments);
+    }
+
+    Fixture.load = function() {
+      var args;
+      args = arguments;
+      if (window.env.started) {
+        return Fixture.__super__.constructor.load.apply(this, arguments);
+      } else {
+        return beforeEach((function(_this) {
+          return function() {
+            return fixture.__super__.constructor.load.apply(_this, args);
+          };
+        })(this));
+      }
+    };
+
+    Fixture.set = function() {
+      var args;
+      args = arguments;
+      if (window.env.started) {
+        return Fixture.__super__.constructor.set.apply(this, arguments);
+      } else {
+        return beforeEach((function(_this) {
+          return function() {
+            return fixture.__super__.constructor.set.apply(_this, args);
+          };
+        })(this));
+      }
+    };
+
+    return Fixture;
+
+  })(Teaspoon.Fixture);
+
+}).call(this);
+:ET

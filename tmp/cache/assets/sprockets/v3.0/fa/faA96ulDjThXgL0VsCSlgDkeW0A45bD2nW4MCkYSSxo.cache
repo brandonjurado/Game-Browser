@@ -1,0 +1,21 @@
+I"×(function() {
+  var base, base1;
+
+  if (typeof mocha === "undefined" || mocha === null) {
+    throw new Teaspoon.Error('Mocha not found -- use `suite.use_framework :mocha` and adjust or remove the `suite.javascripts` directive.');
+  }
+
+  if (this.Teaspoon == null) {
+    this.Teaspoon = {};
+  }
+
+  if ((base = this.Teaspoon).Mocha == null) {
+    base.Mocha = {};
+  }
+
+  if ((base1 = this.Teaspoon.Mocha).Reporters == null) {
+    base1.Reporters = {};
+  }
+
+}).call(this);
+:ET

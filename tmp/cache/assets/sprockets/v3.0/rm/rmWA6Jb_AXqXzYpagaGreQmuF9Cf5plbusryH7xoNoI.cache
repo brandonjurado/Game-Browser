@@ -1,0 +1,21 @@
+I"(function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  Teaspoon.Mocha.Reporters.HTML.SpecView = (function(superClass) {
+    extend(SpecView, superClass);
+
+    function SpecView() {
+      return SpecView.__super__.constructor.apply(this, arguments);
+    }
+
+    SpecView.prototype.updateState = function(state) {
+      return SpecView.__super__.updateState.call(this, state, this.spec.spec.duration);
+    };
+
+    return SpecView;
+
+  })(Teaspoon.Reporters.HTML.SpecView);
+
+}).call(this);
+:ET

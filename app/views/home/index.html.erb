@@ -1,0 +1,140 @@
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.16/css/jquery.dataTables.min.css">
+<div class="container">
+  <div class="page-header"><h3>Home</h3></div>
+  <div class="panel panel-default">
+    <div class="table-responsive">
+        <table class="table table-striped" id="game-table">
+        <thead>
+          <tr>
+            <th class="project_column">Name</th>
+            <th class="project_column">Year</th>
+            <th class="project_column">Publisher</th>
+          </tr>
+        </thead>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="popup" id="game-info">
+</div>
+
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js">
+</script>
+<script>
+  var gameTable;
+  $(document).ready(function () {
+      RenderTable();
+  });
+
+  function RenderTable() {
+    BindTable();
+    PopulateTable();
+  }
+
+  // Like button
+  $('#game-info').on('click', 'button', function() {
+    var gameID = (this.id).replace(/[^0-9]+/g, "");
+    var dt = new Date();
+    var utcDate = dt.toUTCString();
+    $.ajax({
+      url: "/likes/add_like",
+      type: "POST",
+      data: {
+        liked: {
+          game_id : gameID,
+          timestamp: utcDate,
+        }
+      },
+      dataType: 'json',
+      success: function(data) {
+        if(data){
+          console.log(data.game_title + " was liked at " +
+                    data.liked_at + " by IP: " + data.ip_address);
+          var increment = parseInt($("#like-count").html().replace(/[^0-9]+/g, ""))+1;
+          $("#like-count").html("Likes: " + increment);
+        } else { console.log("Duplicate like prevented for 5 minutes.") }
+      }
+    });
+  });
+
+  // Click name - display dialog function
+  $('#game-table').on('click', 'tbody td', function() {
+    // only respond on name column click
+    if ($(this).index() == 0) {
+      console.log('Game ID : ', gameTable.row(this).data()[3]);
+      console.log("Likes: ", gameTable.row(this).data()[4]);
+      $("#game-info").toggle($("#game-info").css('display') == 'none');
+      var gameID = gameTable.row(this).data()[3];
+      var likeCount = gameTable.row(this).data()[4];
+      $.ajax({
+        url: "/games/"+gameID,
+        type: "GET",
+        success: function(data) {
+          html = '';
+          html+='<h1>'+data.name+'</h1>';
+          html+='<a class="close" id="close-info">×</a>';
+          html+='<img width="250" height="300" alt="Game Cover" src='+data.image_url+ ' />';
+          html+='<p>'+data.description+'</p>';
+          html+='<div>Year: '+data.year+'</div>';
+          html+='<div>Publisher: '+data.manufacturer+'</div>';
+          html+='<div id="like-count">Likes: '+likeCount+'</div>';
+          html+='<div><button class="like" id="like-'+gameID+'">Like</button></div>';
+          $("#game-info").empty().append(html);
+        }
+      });
+    }
+  });
+
+  // close game dialog
+  $('#game-info').on('click', '#close-info', function() {
+    $("#game-info").toggle($("#game-info").css('display') == 'none');
+  });
+
+  function BindTable() {
+      gameTable = $("#game-table").DataTable({
+          "deferRender": true,
+          "paging": true,
+          "lengthChange": true,
+          "searching": true,
+          "aaSorting": [1,'asc'],
+          "ordering": true,
+          "info": true,
+          "autoWidth": false,
+          "sDom": 'lfrtip'
+      });
+  }
+
+  function PopulateTable() {
+    $.ajax({
+      url: "/games/",
+      type: "GET",
+      success: function(response) {
+        var results = [];
+        $.each(response, function (index, game) {
+          var result = [];
+          result.push(game.name);
+          result.push(game.year);
+          result.push(game.publisher);
+          result.push(game.id);
+          result.push(game.likes);
+          result.push(game.url);
+          result.push(game.description);
+          if (game.active == true) {
+            results.push(result);
+          }
+        });
+        gameTable.rows.add(results);
+        gameTable.draw();
+      },
+      failure: function () {
+        $("#game-table").append("Error when fetching data.");
+      }
+    });
+  }
+</script>
